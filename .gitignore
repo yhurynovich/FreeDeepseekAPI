@@ -14,3 +14,5 @@ data/accounts/*.json
 /tmp/deepseek_response_*
 .DS_Store
 *.pdf
+.mimocode/skills/council-code-review/SKILL.md
+.mimocode/skills/council-code-review/scripts/council_review.py
