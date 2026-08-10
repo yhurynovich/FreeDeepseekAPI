@@ -5,8 +5,10 @@
 This project reverse-engineers the **DeepSeek Web chat API** (`chat.deepseek.com`) to expose it as OpenAI/Anthropic-compatible local API endpoints. It allows compatible clients (Hermes agents, Claude Code, OpenAI SDK/Responses-style clients, custom scripts, etc.) to use DeepSeek's free web model as if it were a paid API — including tool calling, streaming, reasoning output, and multi-session support.
 
 **Server:** `host2.onldigital.com` (161.97.175.214)  
-**Proxy:** Node.js HTTP server on port 9654  
+**Proxy:** Node.js HTTP server on port 9655 (configurable via `PORT` env var)  
 **Model exposed:** `deepseek-web-v3` (DeepSeek V3 via web)
+
+> **See also:** [Session Management Guide](session-management.md) for detailed caller documentation on agent IDs, session lifecycle, and management endpoints.
 
 ---
 
@@ -16,7 +18,7 @@ This project reverse-engineers the **DeepSeek Web chat API** (`chat.deepseek.com
 ┌──────────────┐     POST /v1/chat/completions     ┌──────────────────┐
 │              │ ──────────────────────────────►    │                  │
 │   Hermes     │    {messages, tools, user,         │  DeepSeek Proxy  │
-│   Agent      │     stream}                        │  (port 9654)     │
+│   Agent      │     stream}                        │  (port 9655)     │
 │   (Client)   │ ◄──────────────────────────────    │                  │
 │              │    {choices[].message.content      │  Node.js HTTP    │
 └──────────────┘     or tool_calls}                 │  Server          │
@@ -427,7 +429,7 @@ Remote Hermes agents should set the `user` field in their requests for named ses
 ```yaml
 # In remote agent config
 model:
-  base_url: http://161.97.175.214:9654/v1
+  base_url: http://161.97.175.214:9655/v1
   model: deepseek-web-v3
 ```
 
@@ -576,7 +578,7 @@ const DS_CONFIG = {
 model:
   default: deepseek-web-v3
   provider: custom
-  base_url: http://127.0.0.1:9654/v1
+  base_url: http://127.0.0.1:9655/v1
   model: deepseek-web-v3
 providers: {}
 fallback_providers: []
@@ -599,19 +601,19 @@ fallback_providers: []
 node /root/.hermes/profiles/security-guy/scripts/deepseek-api-server.js
 
 # Output
-[DS-API] Server on http://0.0.0.0:9654 (multi-agent sessions enabled)
+[DS-API] Server on http://0.0.0.0:9655 (multi-agent sessions enabled)
 [DS-API] POST /v1/chat/completions (stream=true|false)
 [DS-API] GET  /v1/sessions — list active agent sessions
 [DS-API] POST /reset-session?agent=<id> — reset agent's session
 [DS-API] POST /reset-session?agent=all — reset ALL sessions
 
 # Test
-curl -s http://127.0.0.1:9654/health
-curl -s http://127.0.0.1:9654/v1/models
-curl -s http://127.0.0.1:9654/v1/sessions
+curl -s http://127.0.0.1:9655/health
+curl -s http://127.0.0.1:9655/v1/models
+curl -s http://127.0.0.1:9655/v1/sessions
 
 # Chat
-curl -s http://127.0.0.1:9654/v1/chat/completions \
+curl -s http://127.0.0.1:9655/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"hello"}],"stream":false}'
 ```

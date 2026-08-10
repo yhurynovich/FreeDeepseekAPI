@@ -2,6 +2,8 @@
 
 This guide explains how to use the `user` field (agent ID) for session isolation, understand session lifecycle, and manage sessions via API endpoints.
 
+> **Full API Reference:** See [api-documentation.md](api-documentation.md) for complete endpoint specifications, tool calling, and configuration details.
+
 ---
 
 ## Quick Start: Supplying Your Agent ID
