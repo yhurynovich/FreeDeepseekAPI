@@ -1,0 +1,32 @@
+services:
+  freedeepseekapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: freedeepseekapi
+    restart: unless-stopped
+    ports:
+      - "8601:9655"
+    volumes:
+      # Persists your DeepSeek auth credentials across container restarts.
+      # Run "npm run auth" on the host BEFORE starting the container,
+      # then copy deepseek-auth.json and .chrome-profile-deepseek/ here.
+      - ./data/deepseek-auth.json:/app/deepseek-auth.json
+      - ./data/.chrome-profile-deepseek:/app/.chrome-profile-deepseek
+      #- ./overrides/server.js:/app/server.js:ro # Overrides the cloned repo's server.js with our patched version (/new command support)
+    environment:
+      - NON_INTERACTIVE=1
+      - NODE_ENV=production
+    # Chromium inside the container needs these kernel capabilities
+    cap_add:
+      - SYS_ADMIN
+    # Required for Chrome's sandboxing to work inside Docker
+    security_opt:
+      - seccomp:unconfined
+    shm_size: "500mb"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:9655/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

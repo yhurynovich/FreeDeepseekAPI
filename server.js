@@ -1472,7 +1472,13 @@ const server = http.createServer(async (req, res) => {
             }
 
             let toolCall = parseToolCall(fullContent);
-            
+
+            // Warn if tools were provided but model returned text instead of a tool call
+            if (tools.length > 0 && !toolCall) {
+                const toolNames = tools.map(t => t.function?.name || t.name).filter(Boolean).join(', ');
+                console.log(`${agentTag} WARNING: ${tools.length} tool(s) provided (${toolNames}) but model returned text — no tool call detected (${fullContent.length} chars)`);
+            }
+
             // Retry if TOOL_CALL was found but JSON was truncated/invalid
             if (!toolCall && /TOOL_CALL:\s*\w/i.test(fullContent)) {
                 console.log(`${agentTag} TOOL_CALL detected but JSON invalid/truncated (${fullContent.length} chars). Retrying with stricter prompt...`);
